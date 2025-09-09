@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useFormValidation } from "../hooks/useFormValidation"
 import { BASE_URL } from "../components/constants"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Signup = () => {
@@ -141,8 +141,9 @@ const Signup = () => {
                         >
                             {isSubmitting ? 'Creating Account...' : 'Create Account'}
                         </button>
-                        
+                        <Link to={"/login"}><p className="text-blue-500 hover:underline mt-2">Already an User? Click to Login</p></Link>
                     </form>
+                    
                 </div>
 
             </div>

@@ -23,6 +23,18 @@ const getProperty = async (req, res) => {
   }
 };
 
+const getSingleProperty = async (req,res) => {
+
+  const { id} = req.params
+
+  try{
+    const properties = await Properties.findById(id)
+    res.status(200).json(properties)
+  }catch (err) {
+    res.send("Error : " + err.message);
+  }
+}
+
 const listProperty = async (req, res) => {
   try {
     if (req.user.role !== "host") {
@@ -124,4 +136,4 @@ const deleteProperty = async (req, res) => {
     res.send("Error : " + err.message);
   }
 };
-module.exports = { getProperty, listProperty, updateProperty, deleteProperty };
+module.exports = { getProperty, getSingleProperty, listProperty, updateProperty, deleteProperty };

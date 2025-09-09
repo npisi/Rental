@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
-import Header from "../components/Header"
 import { BASE_URL } from "../components/constants"
 import PropertyCards from "../components/PropertyCards"
+import { useNavigate } from "react-router-dom"
 
 const Home = () => {
 
     const [propertyData, setPropertyData] = useState([])
+    const navigate = useNavigate()
 
     useEffect(() => {
         fetchData()
@@ -20,13 +21,19 @@ const Home = () => {
             console.error("Error fetching properties:", error)
         }
     }
+
+    const onCardClick = (id) => {
+        navigate(`/property-details/${id}`)
+    }
+
     return (
         <>
-            <Header />
+            
             <div className="bg-gray-300 min-h-screen flex flex-col items-center">
 
                 {propertyData.map((item) => (
-                    <PropertyCards
+                    <PropertyCards onCardClick={onCardClick}
+                        id={item._id} 
                         key={item._id}
                         title={item.title}
                         coverImg= {item.profileImage}
