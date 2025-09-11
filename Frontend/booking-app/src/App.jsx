@@ -5,6 +5,7 @@ import PropertyFormContainer from "./pages/PropertyFormContainer"
 import Home from "./pages/Home"
 import Header from "./components/Header"
 import PropertyDetails from "./pages/PropertyDetails"
+import Profile from "./pages/Profile"
 
 // Inline Layout with Header
 const MainLayout = () => {
@@ -28,6 +29,7 @@ export default function App() {
         {/* Public pages without Header */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/profile" element={<Profile />} />
 
         {/* Pages with Header */}
         <Route element={<MainLayout />}>

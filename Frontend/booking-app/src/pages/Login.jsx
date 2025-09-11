@@ -2,6 +2,7 @@ import { useState } from "react"
 import { BASE_URL } from "../components/constants"
 import { FaEye, FaEyeSlash } from "react-icons/fa"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "../context/AuthContext.jsx"
 
 
 
@@ -11,6 +12,7 @@ const Login = () => {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
+  const { refreshUser } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -28,6 +30,7 @@ const Login = () => {
       const data = await res.json()
 
       if(res.ok) {
+        await refreshUser()
         navigate("/")
       }
 
