@@ -4,6 +4,7 @@ import { BASE_URL } from "../components/constants";
 import { useParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"
+import { useAuth } from "../context/AuthContext";
 
 const AMENITY_OPTIONS = [
   "Wifi", "Kitchen", "Washer", "Dryer", "Heating",
@@ -30,6 +31,7 @@ const PropertyFormContainer = ({ mode = "create" }) => {
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
 
+  const {user, logout} = useAuth();
 
   const addDateRange = () => {
     if (startDate && endDate) {
@@ -166,7 +168,10 @@ const PropertyFormContainer = ({ mode = "create" }) => {
     };
 
     return (
-        <PropertyForm
+       
+      <>
+
+      {user?.role === "host" ? (<PropertyForm
             mode={mode}
             formData={formData}
             handleInputChange={handleInputChange}
@@ -186,7 +191,14 @@ const PropertyFormContainer = ({ mode = "create" }) => {
             addDateRange={addDateRange}
             removeDate={removeDate}
             clearAllDates={clearAllDates}
-        />
+        />)
+        :(
+          <h1>U are UnauthoRized</h1>
+        )
+      }
+
+        
+        </>
     );
 
 }

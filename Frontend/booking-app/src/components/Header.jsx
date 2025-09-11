@@ -30,7 +30,7 @@ const Header = () => {
                         <span className="mt-2 cursor-pointer  hover:text-white ">Discover.Book.Belong</span>
                         <span className="mt-2 cursor-pointer  hover:text-white ">Help</span>
                         <Link to={"/profile"} className="mt-2 cursor-pointer  hover:text-white ">Hello, {user.firstName}</Link>
-                        <button onClick={logout} className="mt-2 cursor-pointer  hover:text-white ">Logout</button>
+                        <button onClick={logout} className=" cursor-pointer  hover:text-white ">Logout</button>
                     </div>
                 </nav>
             )}
