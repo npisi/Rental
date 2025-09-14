@@ -29,7 +29,7 @@ const Login = () => {
 
       const data = await res.json()
 
-      if(res.ok) {
+      if (res.ok) {
         await refreshUser()
         navigate("/")
       }
@@ -50,7 +50,6 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-
 
           <label htmlFor="password" className=" mt-3 block text-sm font-medium text-gray-700">Password</label>
           <div className="relative">
