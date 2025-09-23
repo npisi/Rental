@@ -136,4 +136,166 @@ const deleteProperty = async (req, res) => {
     res.send("Error : " + err.message);
   }
 };
-module.exports = { getProperty, getSingleProperty, listProperty, updateProperty, deleteProperty };
+
+const getSuggestions = async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.length < 1) {
+      return res.json([]);
+    }
+
+    const searchRegex = new RegExp(q, 'i');
+    const suggestions = [];
+
+    // Search for properties by title
+    const propertySuggestions = await Properties.find(
+      { title: searchRegex },
+      { title: 1, _id: 0 }
+    ).limit(5);
+
+    propertySuggestions.forEach(prop => {
+      suggestions.push({
+        type: 'property',
+        value: prop.title,
+        category: 'property'
+      });
+    });
+
+    // Search for properties by location (city, state, country)
+    const locationSuggestions = await Properties.find(
+      {
+        $or: [
+          { 'location.city': searchRegex },
+          { 'location.state': searchRegex },
+          { 'location.country': searchRegex },
+          { 'location.address': searchRegex }
+        ]
+      },
+      { location: 1, _id: 0 }
+    ).limit(5);
+
+    locationSuggestions.forEach(prop => {
+      const location = prop.location;
+      if (location.city && location.city.match(searchRegex)) {
+        suggestions.push({
+          type: 'location',
+          value: location.city,
+          category: 'city'
+        });
+      }
+      if (location.state && location.state.match(searchRegex)) {
+        suggestions.push({
+          type: 'location',
+          value: location.state,
+          category: 'state'
+        });
+      }
+      if (location.country && location.country.match(searchRegex)) {
+        suggestions.push({
+          type: 'location',
+          value: location.country,
+          category: 'country'
+        });
+      }
+    });
+
+    // Search for amenities
+    const amenitySuggestions = await Properties.find(
+      { amenities: searchRegex },
+      { amenities: 1, _id: 0 }
+    ).limit(5);
+
+    amenitySuggestions.forEach(prop => {
+      prop.amenities.forEach(amenity => {
+        if (amenity.match(searchRegex)) {
+          suggestions.push({
+            type: 'amenity',
+            value: amenity,
+            category: 'amenity'
+          });
+        }
+      });
+    });
+
+    // Remove duplicates and limit results
+    const uniqueSuggestions = suggestions.filter((suggestion, index, self) => 
+      index === self.findIndex(s => s.value === suggestion.value && s.type === suggestion.type)
+    ).slice(0, 10);
+
+    res.json(uniqueSuggestions);
+  } catch (err) {
+    console.error('Error fetching suggestions:', err);
+    res.status(500).json({ error: 'Error fetching suggestions' });
+  }
+};
+
+const searchProperties = async (req, res) => {
+  try {
+    const { query, location, type } = req.query;
+    
+    // Build search criteria
+    const searchCriteria = {};
+    
+    // Search by query (title, description)
+    if (query) {
+      const queryRegex = new RegExp(query, 'i');
+      searchCriteria.$or = [
+        { title: queryRegex },
+        { description: queryRegex }
+      ];
+    }
+    
+    // Search by location
+    if (location) {
+      const locationRegex = new RegExp(location, 'i');
+      const locationCriteria = {
+        $or: [
+          { 'location.city': locationRegex },
+          { 'location.state': locationRegex },
+          { 'location.country': locationRegex },
+          { 'location.address': locationRegex }
+        ]
+      };
+      
+      if (searchCriteria.$or) {
+        searchCriteria.$and = [
+          { $or: searchCriteria.$or },
+          locationCriteria
+        ];
+        delete searchCriteria.$or;
+      } else {
+        Object.assign(searchCriteria, locationCriteria);
+      }
+    }
+    
+    // Search by amenity type
+    if (type) {
+      const typeRegex = new RegExp(type, 'i');
+      const typeCriteria = { amenities: typeRegex };
+      
+      if (searchCriteria.$and) {
+        searchCriteria.$and.push(typeCriteria);
+      } else if (searchCriteria.$or) {
+        searchCriteria.$and = [
+          { $or: searchCriteria.$or },
+          typeCriteria
+        ];
+        delete searchCriteria.$or;
+      } else {
+        Object.assign(searchCriteria, typeCriteria);
+      }
+    }
+    
+    // If no search criteria, return all properties
+    const finalCriteria = Object.keys(searchCriteria).length > 0 ? searchCriteria : {};
+    
+    const properties = await Properties.find(finalCriteria);
+    res.json(properties);
+  } catch (err) {
+    console.error('Error searching properties:', err);
+    res.status(500).json({ error: 'Error searching properties' });
+  }
+};
+
+module.exports = { getProperty, getSingleProperty, listProperty, updateProperty, deleteProperty, getSuggestions, searchProperties };

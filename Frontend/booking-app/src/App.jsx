@@ -6,6 +6,7 @@ import Home from "./pages/Home"
 import Header from "./components/Header"
 import PropertyDetails from "./pages/PropertyDetails"
 import Profile from "./pages/Profile"
+import SearchResults from "./pages/SearchResults"
 
 // Inline Layout with Header
 const MainLayout = () => {
@@ -35,6 +36,7 @@ export default function App() {
         <Route element={<MainLayout />}>
 
           <Route path="/" element={<Home />} />
+          <Route path="/search" element={<SearchResults />} />
           <Route
             path="/properties/create"
             element={<PropertyFormContainer mode="create" />}
