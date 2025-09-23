@@ -9,10 +9,12 @@ import { useAuth } from "../context/AuthContext.jsx"
 const Login = () => {
 
   const [email, setEmail] = useState('')
+  const [error, setError] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
   const { refreshUser } = useAuth()
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -32,6 +34,8 @@ const Login = () => {
       if (res.ok) {
         await refreshUser()
         navigate("/")
+      }else{
+        setError(data.error)
       }
 
 
@@ -65,6 +69,11 @@ const Login = () => {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
+
+          {error && (
+            <p className="text-red-500 text-sm">{error}</p>
+          )}
+          
 
           <div className="flex items-center justify-between mt-4" >
             <label className="flex items-center text-sm text-gray-600 cursor-pointer">
