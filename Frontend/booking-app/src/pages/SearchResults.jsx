@@ -16,10 +16,6 @@ const SearchResults = () => {
     type: searchParams.get('type') || ''
   });
 
-  // Debug: Log search results whenever they update
-  // useEffect(() => {
-  //   console.log('Search results updated:', searchResults);
-  // }, [searchResults]);
 
   const performSearch = async (searchFilters = filters) => {
     setIsLoading(true);
