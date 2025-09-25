@@ -109,7 +109,7 @@ const SearchResults = () => {
     // Dispatch custom event to clear search bar
     window.dispatchEvent(new CustomEvent('clearSearchBar'));
     
-    // Use React Router navigate for SPA navigation
+    
     navigate("/", { replace: true });
   }
 
@@ -124,7 +124,7 @@ const SearchResults = () => {
             <button
               onClick={handleBack}
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors p-3 rounded-md hover:bg-gray-100 border border-gray-300 bg-white shadow-sm"
-              style={{ zIndex: 1000 }}
+              
             >
               <ArrowLeft className="w-5 h-5" />
               <span className="text-sm font-medium">Back</span>
@@ -171,7 +171,7 @@ const SearchResults = () => {
         {!isLoading && !error && (
           <>
             {searchResults.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  xl:grid-cols-4 gap-6">
                 {searchResults.map((property) => (
                   <PropertyCards
                     key={property._id}

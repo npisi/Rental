@@ -9,6 +9,7 @@ const Header = () => {
 
     const handleSearch = (query) => {
         navigate(`/search?q=${encodeURIComponent(query)}`);
+       
     };
 
     const handleSuggestionClick = (suggestion) => {
@@ -34,7 +35,7 @@ const Header = () => {
             {!user ? (
                 <nav className="nav bg-gray-500 h-14 flex text-slate-800 p-2 accent-blue-500 justify-between  sticky top-0 z-50 ">
                     <div className="flex flex-1 items-center">
-                        <Link to={"/"}><img src={logo} className="w-11 h-11  bg-white rounded-full" /></Link>
+                        <Link to={"/"}><img src={logo} className="w-11 h-11  bg-white rounded-full transform transition duration-300 ease-in-out hover:scale-105 hover:shadow-xl " /></Link>
                         <div className="flex-1 flex justify-center">
                             <SearchBar 
                                 onSearch={handleSearch}
@@ -53,7 +54,7 @@ const Header = () => {
             ) : (
                 <nav className="nav bg-gray-500 h-14 flex text-slate-800 p-2 accent-blue-500 justify-between  sticky top-0 z-50 ">
                     <div className="flex flex-1 items-center">
-                        <Link to={"/"}><img src={logo} className="w-11 h-11  bg-white rounded-full" /></Link>
+                        <Link to={"/"}><img src={logo} className="w-11 h-11  bg-white rounded-full transform transition duration-300 ease-in-out hover:scale-105 hover:shadow-xl " /></Link>
                         <div className="flex-1 flex justify-center">
                             <SearchBar 
                                 onSearch={handleSearch}

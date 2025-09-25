@@ -13,7 +13,7 @@ const SearchBar = ({ onSearch, onSuggestionClick, placeholder = "Search properti
   // Debounce search suggestions
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (query.length >= 1) {
+      if (query.length >= 2) {
         fetchSuggestions(query);
       } else {
         setSuggestions([]);
@@ -84,6 +84,7 @@ const SearchBar = ({ onSearch, onSuggestionClick, placeholder = "Search properti
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
+      
       handleSearch();
     }
   };
@@ -147,7 +148,7 @@ const SearchBar = ({ onSearch, onSuggestionClick, placeholder = "Search properti
           onKeyPress={handleKeyPress}
           onFocus={() => query.length >= 2 && setShowSuggestions(true)}
           placeholder={placeholder}
-          className="w-full pl-4 pr-20 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+          className="w-full pl-4  py-2 border border-gray-300 rounded-full  shadow-sm"
         />
         {query && (
           <button
