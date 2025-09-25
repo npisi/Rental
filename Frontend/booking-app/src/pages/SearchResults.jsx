@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../components/constants';
 import PropertyCards from '../components/PropertyCards';
-import SearchBar from '../components/SearchBar';
-import { Filter, MapPin, Home, Star, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 const SearchResults = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +15,11 @@ const SearchResults = () => {
     location: searchParams.get('location') || '',
     type: searchParams.get('type') || ''
   });
+
+  // Debug: Log search results whenever they update
+  // useEffect(() => {
+  //   console.log('Search results updated:', searchResults);
+  // }, [searchResults]);
 
   const performSearch = async (searchFilters = filters) => {
     setIsLoading(true);
@@ -44,51 +48,21 @@ const SearchResults = () => {
   };
 
   useEffect(() => {
-    if (filters.query || filters.location || filters.type) {
-      performSearch(filters);
+    const derivedFilters = {
+      query: searchParams.get('q') || '',
+      location: searchParams.get('location') || '',
+      type: searchParams.get('type') || ''
+    };
+
+    setFilters(derivedFilters);
+
+    if (derivedFilters.query || derivedFilters.location || derivedFilters.type) {
+      performSearch(derivedFilters);
+    } else {
+      setSearchResults([]);
     }
   }, [searchParams]);
 
-  const handleSearch = (query) => {
-    const newFilters = { ...filters, query };
-    setFilters(newFilters);
-    updateURL(newFilters);
-  };
-
-  const handleSuggestionClick = (suggestion) => {
-    let newFilters = { ...filters };
-    
-    switch (suggestion.type) {
-      case 'property':
-        newFilters.query = suggestion.value;
-        break;
-      case 'location':
-        newFilters.location = suggestion.value;
-        break;
-      case 'amenity':
-        newFilters.type = suggestion.value;
-        break;
-    }
-    
-    setFilters(newFilters);
-    updateURL(newFilters);
-  };
-
-  const updateURL = (newFilters) => {
-    const params = new URLSearchParams();
-    if (newFilters.query) params.set('q', newFilters.query);
-    if (newFilters.location) params.set('location', newFilters.location);
-    if (newFilters.type) params.set('type', newFilters.type);
-    
-    setSearchParams(params);
-  };
-
-  const clearFilters = () => {
-    const clearedFilters = { query: '', location: '', type: '' };
-    setFilters(clearedFilters);
-    setSearchParams({});
-    setSearchResults([]);
-  };
 
   const onCardClick = (id) => {
     navigate(`/property-details/${id}`);
@@ -104,12 +78,8 @@ const SearchResults = () => {
   };
 
   const handleBack = () => {
-    console.log('Back button clicked - navigating to home');
-    
     // Dispatch custom event to clear search bar
     window.dispatchEvent(new CustomEvent('clearSearchBar'));
-    
-    
     navigate("/", { replace: true });
   }
 
@@ -171,7 +141,7 @@ const SearchResults = () => {
         {!isLoading && !error && (
           <>
             {searchResults.length > 0 ? (
-              <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  xl:grid-cols-4 gap-6">
                 {searchResults.map((property) => (
                   <PropertyCards
                     key={property._id}
