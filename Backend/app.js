@@ -10,6 +10,7 @@ app.use(cookieParser())
 const authRoutes = require("./routes/authRoute");
 const userRoutes = require("./routes/userRoute");
 const propertyRoutes = require('./routes/propertyRoutes')
+const bookingRoutes = require('./routes/bookingRoutes')
 
 const port = 5000;
 
@@ -24,6 +25,7 @@ app.use(cors({
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use('/api',propertyRoutes)
+app.use('/api',bookingRoutes)
 
 connectDb()
   .then(() => {
