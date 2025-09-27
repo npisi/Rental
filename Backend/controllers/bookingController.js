@@ -1,6 +1,6 @@
 const Booking = require("../model/bookingSchema");
 const Property = require("../model/propertySchema");
-const User = require("../model/userSchema");
+
 const {
   checkDateAvailability,
   generateRequestedDates,
@@ -9,7 +9,7 @@ const {
 
 const createBooking = async (req, res) => {
   try {
-    const { propertyId, checkIn, checkOut, guestInfo, totalPrice } = req.body;
+    const { propertyId, checkIn, checkOut, guestInfo } = req.body;
     const guestId = req.user.id;
 
     const property = await Property.findById(propertyId);
@@ -40,8 +40,12 @@ const createBooking = async (req, res) => {
     }
 
     const requestedDates = generateRequestedDates(checkInDate, checkOutDate);
+
+    const availableDatesNormalized = property.availableDates.map(
+      (date) => new Date(date).toISOString().split("T")[0]
+    );
     const isAvailableDate = requestedDates.every((date) =>
-      property.availableDates.includes(date)
+      availableDatesNormalized.includes(date)
     );
     if (!isAvailableDate) {
       return res
@@ -59,6 +63,22 @@ const createBooking = async (req, res) => {
         .status(400)
         .json({ error: "Property is not available for the selected dates" });
     }
+
+    //Price Calculation
+    const nights = Math.ceil(
+      (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)
+    );
+    const basePrice = property.pricePerNight * nights;
+    const serviceFee = Math.round(basePrice * 0.14); //14%
+    const taxes = Math.round(basePrice * 0.12); //12%
+    const totalAmount = basePrice + serviceFee + taxes;
+
+    const totalPrice = {
+      basePrice,
+      serviceFee,
+      taxes,
+      totalAmount,
+    };
 
     const booking = new Booking({
       propertyId,
@@ -140,21 +160,23 @@ const updateBookingStatus = async (req, res) => {
         .json({ error: "Not authorized to update this booking" });
     }
 
+    const previousStatus = booking.bookingStatus;
     booking.bookingStatus = status;
     await booking.save();
 
-    if (status === "confirmed") {
+    if (status === "confirmed" && previousStatus !== "confirmed") {
       const property = await Property.findById(booking.propertyId);
       const bookedDates = generateRequestedDates(
         booking.checkIn,
         booking.checkOut
       );
 
-      property.availableDates = property.availableDates.filter(
-        (date) => !bookedDates.includes(date)
-      );
+      property.availableDates = property.availableDates.filter((date) => {
+        const dateStr = new Date(date).toISOString().split("T")[0];
+        return !bookedDates.includes(dateStr);
+      });
 
-      await booking.save();
+      await property.save();
     }
 
     res.status(200).json({
@@ -169,7 +191,7 @@ const updateBookingStatus = async (req, res) => {
 const cancelBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { reason } = req.body;
     const userId = req.user.id;
 
     const booking = await Booking.findById(id);
@@ -190,18 +212,55 @@ const cancelBookingStatus = async (req, res) => {
       return res.status(400).json({ error: "Cannot cancel completed booking" });
     }
 
+    if (booking.bookingStatus === "cancelled") {
+      return res.status(400).json({
+        error: "Booking is already cancelled",
+      });
+    }
+
+    const now = new Date();
+    const checkInDate = new Date(booking.checkIn);
+    const hoursUntilCheckIn = (checkInDate - now) / (1000 * 60 * 60);
+
+    if (hoursUntilCheckIn < 24 && isGuest) {
+      return res.status(400).json({
+        error: "Cannot cancel booking within 24 hours of check-in",
+      });
+    }
+
+    // Storing original status for date restoration logic
+    const wasConfirmed = booking.bookingStatus === "confirmed";
+
     booking.bookingStatus = "cancelled";
+
+    if (booking.cancellation === undefined) {
+      booking.cancellation = {
+        cancelledBy: isGuest ? "guest" : "host",
+        cancelledAt: new Date(),
+        reason: reason || "No reason provided",
+      };
+    }
+
     await booking.save();
 
-    await addDatesBackToProperty(
-      booking.propertyId,
-      booking.checkIn,
-      booking.checkOut
-    );
+    if (wasConfirmed) {
+      try {
+        await addDatesBackToProperty(
+          booking.propertyId,
+          booking.checkIn,
+          booking.checkOut
+        );
+        console.log(`Restored dates for cancelled booking ${booking._id}`);
+      } catch (dateError) {
+        console.error("Error restoring dates:", dateError);
+        // Don't fail the cancellation if date restoration fails
+      }
+    }
 
     res.status(200).json({
       message: "Booking cancelled successfully",
       booking,
+      datesRestored: wasConfirmed,
     });
   } catch (err) {
     res.status(500).send("error" + err);

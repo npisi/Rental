@@ -23,13 +23,14 @@ const Home = () => {
 
   const onCardClick = (id) => {
     navigate(`/property-details/${id}`)
+    window.scrollTo(0, 0);
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       {/* Centered Container */}
       <div className="max-w-6xl mx-auto px-6">
-        
+
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">

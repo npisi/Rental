@@ -2,24 +2,24 @@ const Booking = require("../model/bookingSchema");
 const Property = require("../model/propertySchema");
 
 const checkDateAvailability = async (propertyId, checkIn, checkOut) => {
-    try{
-        const overlappingBookings =  await Booking.find({
-            propertyId,
-            bookingStatus : {
-                $in: ["confirmed" , "pending"]
-            },
-            $or : [
-                {
-                    checkIn : {$lt : checkOut},
-                    checkOut : {$gt : checkIn}
-                }
-            ]
-        })
-        return overlappingBookings.length === 0;
-    }catch (err) {
+  try {
+    const overlappingBookings = await Booking.find({
+      propertyId,
+      bookingStatus: {
+        $in: ["confirmed", "pending"],
+      },
+      $or: [
+        {
+          checkIn: { $lt: checkOut },
+          checkOut: { $gt: checkIn },
+        },
+      ],
+    });
+    return overlappingBookings.length === 0;
+  } catch (err) {
     throw new Error("Error checking date availability: " + err.message);
   }
-}
+};
 
 const generateRequestedDates = (checkIn, checkOut) => {
   const requestedDates = [];
@@ -36,27 +36,69 @@ const generateRequestedDates = (checkIn, checkOut) => {
 };
 
 const addDatesBackToProperty = async (propertyId, checkIn, checkOut) => {
-  try{
-    const property = await Property.findById(propertyId)
-    if(!property){
-      return resizeBy.status(404).json({message : "Property Not Found"})
+  try {
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return { success: false, error: "Property not found" };
     }
 
-    const datesToAdd = generateRequestedDates(checkIn, checkOut)
+    const datesToAdd = generateRequestedDates(checkIn, checkOut);
 
-    const updatedAvailability = Array.form(
-      new Set([...property.availableDates, ...datesToAdd])
-    )
+    // Normalize dates for comparison
+    const existingDatesNormalized = property.availableDates.map(
+      date => new Date(date).toISOString().split('T')[0]
+    );
 
-    property.availableDates = updatedAvailability
-    await property.save()
+    // Merging and deduplicate
+    const mergedDates = Array.from(
+      new Set([...existingDatesNormalized, ...datesToAdd])
+    );
 
-    return property.availableDates;
+    // Converting back to Date objects and update property
+    property.availableDates = mergedDates
+      .map(dateStr => new Date(dateStr))
+      .sort((a, b) => a - b);
 
-  }catch(err){
-    res.status(500).send(err)
+    await property.save();
+
+    return { 
+      success: true, 
+      addedDates: datesToAdd,
+      totalAvailable: property.availableDates.length 
+    };
+
+  } catch (err) {
+    return { 
+      success: false, 
+      error: err.message 
+    };
   }
+};
+
+const removeExpiredDates = async (property) => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const validDates = property.availableDates.filter(date => {
+    const propertyDate = new Date(date)
+    propertyDate.setHours(0,0,0,0)
+    return propertyDate >= today
+  })
+
+  if(validDates.length !== property.availableDates.length){
+    property.availableDates = validDates
+    await property.save()
+    console.log(`Cleaned up ${property.availableDates.length - validDates.length} expired dates`);
+  }
+
+  return property;
+
+
 }
 
-
-module.exports = {checkDateAvailability , generateRequestedDates, addDatesBackToProperty}
+module.exports = {
+  checkDateAvailability,
+  generateRequestedDates,
+  addDatesBackToProperty,
+  removeExpiredDates
+};

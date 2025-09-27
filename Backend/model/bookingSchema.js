@@ -61,6 +61,18 @@ const bookingSchema = new Schema({
     enum: ["confirmed", "cancelled", "completed", "pending"],
     default: "pending",
   },
+  cancellation:{
+    cancelledBy : {
+      type: String,
+      enum: ["guest","host"],
+    },
+    cancelledAt : {
+      type: Date
+    },
+    reason : {
+      type : String
+    }
+  }
  
 }, {timestamps : true});
 
