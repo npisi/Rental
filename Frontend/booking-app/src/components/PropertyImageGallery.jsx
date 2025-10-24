@@ -10,7 +10,7 @@ const PropertyImageGallery = ({ images, profileImage, title }) => {
 
     return (
         <>
-            <div className="grid grid-cols-4 grid-rows-2  w-200 h-96 gap-2 relative   ">
+            <div className="grid grid-cols-4 grid-rows-2  w-180 h-96 gap-2 relative   ">
                 {/* first large photo */}
                 <div className='col-span-2 row-span-2 group'>
                     <img src={profileImage} alt={title} className='w-full h-full object-cover cursor-pointer rounded-xl group-hover:brightness-90 transition-all ' />

@@ -46,42 +46,53 @@ const PropertyDetails = () => {
 
 
 
+
     return (
         <>
-            <div className=" bg-gray-50 min-h-screen mx-auto px-4 flex flex-col items-center py-8">
-                <div className="  flex justify-between w-200 items-start ">
-                    <h1 className="text-3xl  font-semibold mb-2 ">{propertyData?.title}</h1>
-                    <div>
-                        <p className="text-gray-600 ">{propertyData?.location?.address}</p>
-                        <p className="text-gray-600 mb-2">{propertyData?.location?.city}</p></div></div>
-
-                <PropertyImageGallery images={propertyData.images}
-                    title={propertyData.title}
-                    profileImage={propertyData.profileImage} />
-
-
-
-                <div className="w-200 mt-2">
+            <div className="bg-gray-50 min-h-screen px-6 py-8 flex flex-col">
                 
+                <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-5">
+                    {/* LEFT: Property Details */}
+                    <div className="flex-1">
+                        <h1 className="text-3xl font-semibold mb-2">{propertyData?.title}</h1>
+                <p className="text-gray-600">{propertyData?.location?.address}, {propertyData?.location?.city}</p>
 
-                    <h3 className="text-xl font-semibold mb-4">What this place offers</h3>
-                    <div className="grid grid-cols-3 gap-3">{propertyData?.amenities?.map((item, index) => (
-                        <div key={index} className="flex items-center  gap-3">
-                            {amenityIcons[item.toLowerCase()] || <Wifi className="h-5 w-5" />}
-                            <span className="capitalize ">{item}</span>
-                        </div>
-                    ))}</div>
-
-                    <AvailabilityCalendar availableDates={propertyData?.availableDates}
-                    pricePerNight={propertyData?.pricePerNight}
-                />
-
-                    <h3 className="text-xl font-semibold mt-3 mb-4">About This Place </h3>
-                    <p className="text-sm font-semibold text-gray-500">{propertyData.description}</p>
+                {/* Images */}
+                <div className="my-6">
+                    <PropertyImageGallery
+                        images={propertyData.images}
+                        title={propertyData.title}
+                        profileImage={propertyData.profileImage}
+                    />
                 </div>
 
-                
+                        {/* Amenities */}
+                        <h3 className="text-xl font-semibold mb-4">What this place offers</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+                            {propertyData?.amenities?.map((item, index) => (
+                                <div key={index} className="flex items-center gap-3">
+                                    {amenityIcons[item.toLowerCase()] || <Wifi className="h-5 w-5" />}
+                                    <span className="capitalize">{item}</span>
+                                </div>
+                            ))}
+                        </div>
 
+                        {/* Description */}
+                        <h3 className="text-xl font-semibold mb-4">About this place</h3>
+                        <p className="text-gray-600 leading-relaxed">{propertyData.description}</p>
+                    </div>
+
+                    {/* RIGHT: Booking / Calendar Card */}
+                    <div className="w-full lg:w-[420px]">
+                        <div className="sticky top-24">
+                            <AvailabilityCalendar   
+                                availableDates={propertyData?.availableDates}
+                                pricePerNight={propertyData?.pricePerNight}
+                                propertyId={id}
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
         </>
     )
