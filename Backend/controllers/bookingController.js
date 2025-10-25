@@ -184,7 +184,7 @@ const updateBookingStatus = async (req, res) => {
       booking,
     });
   } catch (err) {
-    res.status(500).send("error" + err);
+    res.status(500).json({ error: "Error updating booking: " + err.message });
   }
 };
 
@@ -263,7 +263,7 @@ const cancelBookingStatus = async (req, res) => {
       datesRestored: wasConfirmed,
     });
   } catch (err) {
-    res.status(500).send("error" + err);
+    res.status(500).json({ error: "Error cancelling booking: " + err.message });
   }
 };
 

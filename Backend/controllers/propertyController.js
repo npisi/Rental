@@ -1,7 +1,7 @@
 const Properties = require("../model/propertySchema");
 const cloudinary = require("../config/cloudinary");
 const streamifier = require("streamifier");
-const {removeExpiredDates} = require('../utils/dateUtils')
+const { removeExpiredDates } = require("../utils/dateUtils");
 
 const uploadBufferToCloudinary = (buffer, options = {}) =>
   new Promise((resolve, reject) => {
@@ -25,7 +25,7 @@ const getProperty = async (req, res) => {
 
     res.json(properties);
   } catch (err) {
-    res.send("Error : " + err.message);
+    res.status(500).json({ error: "Error : " + err.message });
   }
 };
 
@@ -36,14 +36,14 @@ const getSingleProperty = async (req, res) => {
     const properties = await Properties.findById(id);
     res.status(200).json(properties);
   } catch (err) {
-    res.send("Error : " + err.message);
+    res.status(500).json({ error: "Error : " + err.message });
   }
 };
 
 const listProperty = async (req, res) => {
   try {
     if (req.user.role !== "host") {
-      return res.status(403).send("Only hosts can add properties");
+      return res.status(403).json({ error: "Only hosts can add properties" });
     }
 
     let profileImageUrl = null;
@@ -80,21 +80,25 @@ const listProperty = async (req, res) => {
     await prop.save();
     res.send("Property added Successfully");
   } catch (err) {
-    res.send("Error : " + err.message);
+    res.status(500).json({ error: "Error : " + err.message });
   }
 };
 
 const updateProperty = async (req, res) => {
   try {
     if (req.user.role !== "host") {
-      return res.status(403).send("Only hosts can update properties");
+      return res
+        .status(403)
+        .json({ error: "Only hosts can update properties" });
     }
 
     const prop = await Properties.findById(req.params.id);
-    if (!prop) return res.status(404).send("Property not Found");
+    if (!prop) return res.status(404).json({ error: "Property not Found" });
 
     if (prop.hostId.toString() !== req.user.id) {
-      return res.status(403).send("Not authorized to update this property");
+      return res
+        .status(403)
+        .json({ error: "Not authorized to update this property" });
     }
 
     // Optional: allow replacing profile image and appending more gallery images
@@ -124,27 +128,31 @@ const updateProperty = async (req, res) => {
     await prop.save();
     res.send("Property Updated Successfully");
   } catch (err) {
-    res.status(500).send("Error : " + err.message);
+    res.status(500).json({ error: "Error : " + err.message });
   }
 };
 
 const deleteProperty = async (req, res) => {
   try {
     if (req.user.role !== "host") {
-      return res.status(403).send("Only hosts can update properties");
+      return res
+        .status(403)
+        .json({ error: "Only hosts can delete properties" });
     }
 
     const prop = await Properties.findById(req.params.id);
-    if (!prop) return res.status(404).send("Property not Found");
+    if (!prop) return res.status(404).json({ error: "Property not Found" });
 
     if (prop.hostId.toString() !== req.user.id) {
-      return res.status(403).send("Not authorized to update this property");
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this property" });
     }
 
     await prop.deleteOne();
     res.send("Deleted Successfully");
   } catch (err) {
-    res.send("Error : " + err.message);
+    res.status(500).json({ error: "Error : " + err.message });
   }
 };
 
